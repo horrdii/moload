@@ -1,5 +1,6 @@
-import subprocess
 import os
+import subprocess
+import platform
 
 from moviepy.editor import *
 from pathlib import Path
@@ -11,7 +12,15 @@ from os import system, name
 
 init()
 
-SAVE_PATH = str(Path.home() / "Downloads")
+try:
+	if(subprocess.check_output(['uname', '-o']).strip() == b'Android'):
+		SAVE_PATH = "/storage/emulated/0"
+except:
+	SAVE_PATH = str(Path.home() / "Downloads")
+
+if(platform.system() == "Windows"): clear = "cls"
+else: clear = "clear"
+
 streams = {}
 
 
@@ -34,7 +43,7 @@ def checkLink():
 
 
 def printMenu():
-	_ = system("cls")
+	_ = system(clear)
 	print(Fore.GREEN + "Русский военный корабль, иди нахуй!\n")
 	print(Fore.YELLOW + "In what format do you want to save this video? ?\n",
 		Fore.BLUE + "[1] MP4\n",
@@ -47,7 +56,7 @@ def printMenu():
 
 
 def getRes():
-	_ = system("cls")
+	_ = system(clear)
 	i = 0
 	print(Fore.YELLOW + "In what resulution do you want this video?\n")
 	for i in range(len(resolutions) - 1):
@@ -85,7 +94,7 @@ def vidDownload(type):
 		stream.abr = "128kbps"
 
 
-	_ = system("cls")
+	_ = system(clear)
 	print(Fore.YELLOW + "Downloading " + title + '\n')	
 	print(f'Video "{title}" downloaded to "{SAVE_PATH}"\n')
 	stream.download(SAVE_PATH)
