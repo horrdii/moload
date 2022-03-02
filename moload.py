@@ -1,6 +1,7 @@
 import os
 import subprocess
 import platform
+from time import sleep
 
 from moviepy.editor import *
 from pathlib import Path
@@ -14,15 +15,14 @@ init()
 
 try:
 	if(subprocess.check_output(['uname', '-o']).strip() == b'Android'):
-		SAVE_PATH = "/storage/emulated/0/Download"
+		SAVE_PATH = "/storage/emulated/0/Download/moload"
 except:
-	SAVE_PATH = str(Path.home() / "Downloads")
+	SAVE_PATH = str(Path.home() / "Downloads/moload")
 
 if(platform.system() == "Windows"): clear = "cls"
 else: clear = "clear"
 
 streams = {}
-
 
 
 def checkLink():
@@ -36,7 +36,7 @@ def checkLink():
 		yt = YouTube(link)
 	except:
 		print("It's not a link")
-		print(Fore.RED + 'Input in format "python moload.py {link}"')
+		print(Fore.RED + 'Input in form "python moload.py {link}"')
 		return False
 
 	return True
@@ -45,69 +45,73 @@ def checkLink():
 def printMenu():
 	_ = system(clear)
 	print(Fore.GREEN + "Русский военный корабль, иди нахуй!\n")
-	print(Fore.YELLOW + "In what format do you want to save this video? ?\n",
-		Fore.BLUE + "[1] MP4\n",
-		Fore.BLUE + "[2] MP3\n",
-		Fore.RED + "[3] Exit from the program\n")
+	print(Fore.YELLOW + "In what format do you want to save this video?\n\n",
+		Fore.GREEN + "[1]" + Fore.CYAN + " Video\n",
+		Fore.GREEN + "[2]" + Fore.CYAN + " Audio\n",
+		Fore.RED + "[3]" + Fore.MAGENTA + " Exit from the program\n\n")
 
 	choise = input() 
 
 	checkAnswer(choise)
 
 
-def getRes():
+def getTag(streams):
 	_ = system(clear)
 	i = 0
-	print(Fore.YELLOW + "In what resulution do you want this video?\n")
-	for i in range(len(resolutions) - 1):
-		print(Fore.BLUE + f"[{i+1}] {resolutions[i]}\n")
+	print(Fore.YELLOW + "Choose format:\n")
+	for i in range(len(streams) - 1):
+		print(Fore.GREEN + f"[{i+1}]" + Fore.CYAN + f" {streams[i]}\n")
 		i += 1
-	print(Fore.RED + f'[{i+1}]' + " Exit")
+	print(Fore.RED + f'[{i+1}]' + Fore.MAGENTA + " Exit\n")
 
-	res = int(input())
+	tag = int(input())
 
-	if(res == i+1):
+	if(tag == i+1):
 		printMenu()
 		return "E"
 
 	try:
-		return resolutions[res - 1]
+		return streams[tag - 1].itag
 	except:
 		getRes()
 
 
-def convertToMp3():
-	video = VideoFileClip(os.path.join(SAVE_PATH, SAVE_PATH, f"{title}.mp4"), 0)
+def convertToMp3(type):
+	winTitle = f"{title.replace(' ', '*')}"
+	linTitle = f"'{title}.{type}'"
+
+	video = VideoFileClip(os.path.join(SAVE_PATH, SAVE_PATH, f"{title}.{type}"))
 	video.audio.write_audiofile(os.path.join(SAVE_PATH, SAVE_PATH, f"{title}.mp3"))
+	print(SAVE_PATH.replace('\\', '/') + '/' + title)
+	sleep(1)
+	os.remove( os.path.join( SAVE_PATH, title + '.' + type ) )
+	os.remove(SAVE_PATH.replace('\\', '/') + linTitle)
+
 
 def vidDownload(type):
-	if(type == "mp4"):
-		res = getRes()
-		if(res == "E"):
-			printMenu()
-			return
-		stream = streams.filter(file_extension='mp4', resolution=res)[0]
-
-	elif(type == "mp3"):
-		stream = streams.get_by_itag(18)
-		stream.res = "144p"
-		stream.abr = "128kbps"
+	if(type == "vid"):
+		tag = getTag(streams.filter(type="video"))
+	elif(type == "aud"):
+		tag = getTag(streams.filter(type="video"))
+		
+	stream = streams.get_by_itag(tag)
 
 
 	_ = system(clear)
 	print(Fore.YELLOW + "Downloading " + title + '\n')	
 	print(f'Video "{title}" downloaded to "{SAVE_PATH}"\n')
+
 	stream.download(SAVE_PATH)
-	if(type=="mp3"):
-		convertToMp3()
+	if(type=="aud"): convertToMp3(stream.mime_type.split('/')[1])
+	print(Fore.RED + "Some error")
 
 
 
 def checkAnswer(choise):
 	if(choise == "1"):
-		vidDownload("mp4")
+		vidDownload("vid")
 	elif(choise == "2"):
-		vidDownload("mp3")
+		vidDownload("aud")
 	elif(choise == "3"):
 		print("Exit")
 	else:
