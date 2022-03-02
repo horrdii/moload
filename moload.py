@@ -14,7 +14,7 @@ init()
 
 try:
 	if(subprocess.check_output(['uname', '-o']).strip() == b'Android'):
-		SAVE_PATH = "/storage/emulated/0"
+		SAVE_PATH = "/storage/emulated/0/Download"
 except:
 	SAVE_PATH = str(Path.home() / "Downloads")
 
